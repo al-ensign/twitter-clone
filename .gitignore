@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+*.log
+
+# pyenv
+.python-version
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# Environments
+.env
+.env.prod
+**/.env
+./venv/
+/venv/
+
+# Postgres local folder
+./project/db_data
+/db_data
+
+.idea/
+

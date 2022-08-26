@@ -1,0 +1,50 @@
+version: "3.9"
+
+
+services:
+
+    core:
+        build: ./project
+        container_name: core
+        command: bash ./entrypoint.sh
+        depends_on:
+          - db
+          - rabbit
+        ports:
+          - "8000:8000"
+        env_file:
+          - .env
+        volumes:
+          - "./project/:/app/"
+
+    db:
+        image: postgres:14.4
+        container_name: db
+        env_file:
+          - .env
+        expose:
+          - 5432
+        volumes:
+          - "./project/db_data:/var/lib/postgresql/data"
+
+    rabbit:
+       image: rabbitmq:3.10.7
+       container_name: rabbit
+       env_file:
+         - .env
+       ports:
+         - "5673:5672"
+         - "15673:15672"
+
+    celery:
+        build: ./project
+#        image: celery
+        container_name: celery
+        env_file:
+          - .env
+        command: bash ./entrypoint_celery.sh
+        volumes:
+          - "./project/:/app/"
+        depends_on:
+          - rabbit
+          - core
