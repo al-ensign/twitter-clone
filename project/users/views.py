@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework.decorators import action
 
 from .serializers import (
@@ -22,7 +23,11 @@ from .services import (
     verify_refresh_token,
 )
 
+from .s3_storage import get_presigned_url
+
 from django.conf import settings
+
+import logging
 
 User = get_user_model()
 
@@ -40,6 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
         "destroy": [OwnUserAccount | IsAdmin],
         "block_id": [IsAdmin],
         "unblock_id": [IsAdmin],
+        "get_url_to_upload_picture": [OwnUserAccount],
     }
 
     def create(self, request):
@@ -84,6 +90,14 @@ class UserViewSet(viewsets.ModelViewSet):
         unblocked_user = unblock_user(admin, blocked_user)
         serializer = UnblockUserSerializer(unblocked_user)
         return Response(serializer.data)
+
+    @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
+    def get_url_to_upload_picture(self, request, **kwargs):
+        logging.info(request)
+        file_name = request.data.get('file_name')
+        logging.info(file_name)
+        data = get_presigned_url(file_name)
+        return HttpResponse(data, content_type='json')
 
 
 class LoginViewSet(viewsets.ViewSet):
