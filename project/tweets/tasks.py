@@ -21,25 +21,24 @@ def send_email_to_followers(**kwargs):
     recipients = kwargs.get("recipients")
     body = kwargs.get("body")
 
-    for recipient in recipients:
-        logging.info(recipient)
-        client.send_email(
-            Destination={
-                'ToAddresses': [recipient],
-            },
-            Message={
-                'Body': {
-                    'Text': {
-                        'Charset': 'UTF-8',
-                        'Data': body,
-                    },
-                },
-                'Subject': {
+    logging.info(recipients)
+    client.send_email(
+        Destination={
+            'ToAddresses': recipients,
+        },
+        Message={
+            'Body': {
+                'Text': {
                     'Charset': 'UTF-8',
-                    'Data': subject,
+                    'Data': body,
                 },
             },
-            Source=verified_sender,
-        )
+            'Subject': {
+                'Charset': 'UTF-8',
+                'Data': subject,
+            },
+        },
+        Source=verified_sender,
+    )
     logging.info("Done! Notifications are sent")
 
