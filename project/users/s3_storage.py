@@ -13,9 +13,9 @@ s3 = boto3.client(
 bucket = settings.AWS_STORAGE_BUCKET_NAME
 
 
-def get_presigned_url(file_name):
+def get_presigned_url(file_name, method):
     presigned_url = s3.generate_presigned_url(
-        ClientMethod='put_object',
+        ClientMethod=method,
         Params={
             'Bucket': bucket,
             'Key': file_name,

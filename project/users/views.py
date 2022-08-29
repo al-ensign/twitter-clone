@@ -46,6 +46,8 @@ class UserViewSet(viewsets.ModelViewSet):
         "block_id": [IsAdmin],
         "unblock_id": [IsAdmin],
         "get_url_to_upload_picture": [OwnUserAccount],
+        "get_url_to_picture": [OwnUserAccount],
+        "get_url_to_delete_picture": [OwnUserAccount],
     }
 
     def create(self, request):
@@ -95,8 +97,27 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_url_to_upload_picture(self, request, **kwargs):
         logging.info(request)
         file_name = request.data.get('file_name')
+        method = 'put_object'
         logging.info(file_name)
-        data = get_presigned_url(file_name)
+        data = get_presigned_url(file_name,method)
+        return HttpResponse(data, content_type='json')
+
+    @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
+    def get_url_to_picture(self, request, **kwargs):
+        logging.info(request)
+        file_name = request.data.get('file_name')
+        method = 'get_object'
+        logging.info(file_name)
+        data = get_presigned_url(file_name, method)
+        return HttpResponse(data, content_type='json')
+
+    @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
+    def get_url_to_delete_picture(self, request, **kwargs):
+        logging.info(request)
+        file_name = request.data.get('file_name')
+        method = 'delete_object'
+        logging.info(file_name)
+        data = get_presigned_url(file_name, method)
         return HttpResponse(data, content_type='json')
 
 
