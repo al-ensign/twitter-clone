@@ -21,6 +21,7 @@ from .services import (
     unblock_user,
     verify_user_login,
     verify_refresh_token,
+    save_path,
 )
 
 from .s3_storage import get_presigned_url
@@ -96,8 +97,10 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_upload_picture(self, request, **kwargs):
         logging.info(request)
-        file_name = request.data.get('file_name')
+        file = request.data.get('file')
+        file_name = f'user_{request.user.id}/{file}'
         method = 'put_object'
+        save_path(request.user.id, file_name)
         logging.info(file_name)
         data = get_presigned_url(file_name,method)
         return HttpResponse(data, content_type='json')
@@ -105,7 +108,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_picture(self, request, **kwargs):
         logging.info(request)
-        file_name = request.data.get('file_name')
+        file_name = request.user.image_s3_path
         method = 'get_object'
         logging.info(file_name)
         data = get_presigned_url(file_name, method)
@@ -114,7 +117,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_delete_picture(self, request, **kwargs):
         logging.info(request)
-        file_name = request.data.get('file_name')
+        file_name = request.user.image_s3_path
         method = 'delete_object'
         logging.info(file_name)
         data = get_presigned_url(file_name, method)
