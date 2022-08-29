@@ -14,6 +14,11 @@ bucket = settings.AWS_STORAGE_BUCKET_NAME
 
 
 def get_presigned_url(file_name, method):
+
+    """
+    Generates a pre-signed url to s3 bucket based on ClientMethod and File_name.
+    """
+
     presigned_url = s3.generate_presigned_url(
         ClientMethod=method,
         Params={

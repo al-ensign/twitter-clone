@@ -7,6 +7,11 @@ User = get_user_model()
 
 
 def save_path(user_id, file_name):
+
+    """
+    Sets s3 path to a file.
+    """
+
     user = User.objects.get(pk=user_id)
     user.image_s3_path = file_name
     return user.save()

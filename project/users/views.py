@@ -28,8 +28,6 @@ from .s3_storage import get_presigned_url
 
 from django.conf import settings
 
-import logging
-
 User = get_user_model()
 
 
@@ -96,31 +94,41 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_upload_picture(self, request, **kwargs):
-        logging.info(request)
+
+        """
+        Generates a pre-signed url to upload a file to s3 bucket.
+        Sets User.image_s3_path to file's s3 path (key).
+        """
+
         file = request.data.get('file')
         file_name = f'user_{request.user.id}/{file}'
         method = 'put_object'
         save_path(request.user.id, file_name)
-        logging.info(file_name)
         data = get_presigned_url(file_name,method)
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_picture(self, request, **kwargs):
-        logging.info(request)
+
+        """
+        Generates pre-signed url to get a file from s3 bucket.
+        """
+
         file_name = request.user.image_s3_path
         method = 'get_object'
-        logging.info(file_name)
         data = get_presigned_url(file_name, method)
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
     def get_url_to_delete_picture(self, request, **kwargs):
-        logging.info(request)
+
+        """
+        Generates a pre-signed url to delete file from s3 bucket.
+        """
         file_name = request.user.image_s3_path
         method = 'delete_object'
-        logging.info(file_name)
         data = get_presigned_url(file_name, method)
+        save_path(request.user.id, None)
         return HttpResponse(data, content_type='json')
 
 

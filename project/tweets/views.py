@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
@@ -36,7 +37,13 @@ from .services import (
     unfollow,
     like,
     unlike,
+    save_path_s3,
+    get_page_s3_path,
 )
+
+from users.s3_storage import get_presigned_url
+
+import logging
 
 
 class PageViewSet(viewsets.ModelViewSet):
@@ -58,11 +65,57 @@ class PageViewSet(viewsets.ModelViewSet):
         "unfollow_page": [IsAuthenticated],
         "temporary_block_page": [IsModerator | IsAdmin],
         "unlimited_block_page": [IsAdmin],
+        "get_url_to_upload_picture": [IsOwnerOfPage],
+        "get_url_to_picture": [IsOwnerOfPage],
+        "get_url_to_delete_picture": [IsOwnerOfPage],
     }
 
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
         return super(self.__class__, self).get_permissions()
+
+    @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
+    def get_url_to_upload_picture(self, request, **kwargs):
+
+        """
+        Generates a pre-signed url to upload a file to s3 bucket.
+        Sets Page.path to file's s3 path (key).
+        """
+
+        page_id = kwargs.get("pk")
+        file = request.data.get('file')
+        file_name = f'page_{page_id}/{file}'
+        method = 'put_object'
+        save_path_s3(page_id, file_name)
+        data = get_presigned_url(file_name, method)
+        return HttpResponse(data, content_type='json')
+
+    @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
+    def get_url_to_picture(self, request, **kwargs):
+
+        """
+        Generates pre-signed url to get a file from s3 bucket.
+        """
+
+        page_id = kwargs.get("pk")
+        file_name = get_page_s3_path(page_id)
+        method = 'get_object'
+        data = get_presigned_url(file_name, method)
+        return HttpResponse(data, content_type='json')
+
+    @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
+    def get_url_to_delete_picture(self, request, **kwargs):
+
+        """
+        Generates a pre-signed url to delete file from s3 bucket.
+        """
+
+        page_id = kwargs.get("pk")
+        file_name = get_page_s3_path(page_id)
+        method = 'delete_object'
+        data = get_presigned_url(file_name, method)
+        save_path_s3(page_id, None)
+        return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("patch",), permission_classes=[IsAuthenticated])
     def send_follow_request_to_page(self, request, **kwargs):
@@ -71,6 +124,7 @@ class PageViewSet(viewsets.ModelViewSet):
         Send a follow request to someone's Page.
         User can follow a Page only from one of their pages.
         """
+
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_to_follow_id = serializer.validated_data.get("page_id")
@@ -91,6 +145,7 @@ class PageViewSet(viewsets.ModelViewSet):
         """
         Accept an incoming follow request.
         """
+
         serializer = AcceptRejectFollowerSerializer(data=request.data)
         if serializer.is_valid():
             page_id = self.kwargs["pk"]
@@ -131,6 +186,7 @@ class PageViewSet(viewsets.ModelViewSet):
         """
         Accept all incoming follow requests.
         """
+
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -165,6 +221,7 @@ class PageViewSet(viewsets.ModelViewSet):
         """
         Unfollow a Page.
         """
+
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -198,6 +255,7 @@ class PageViewSet(viewsets.ModelViewSet):
         Block a Page forever.
         Permission is given to Admin only.
         """
+
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -233,6 +291,7 @@ class TweetViewSet(viewsets.ModelViewSet):
         Like a Tweet.
         Permission is given to an Authenticated User.
         """
+
         serializer = LikeUnlikeTweetSerializer(data=request.data)
         if serializer.is_valid():
             tweet_id = serializer.validated_data.get("tweet_id")

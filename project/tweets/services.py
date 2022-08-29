@@ -3,6 +3,27 @@ from datetime import datetime
 from .models import Page, Tweet
 
 
+def save_path_s3(page_id, file_name):
+
+    """
+    Sets s3 path to a file.
+    """
+
+    page = Page.objects.get(pk=page_id)
+    page.path = file_name
+    return page.save()
+
+
+def get_page_s3_path(page_id):
+
+    """
+    Returns s3 path to a file.
+    """
+
+    page = Page.objects.get(pk=page_id)
+    return page.path
+
+
 def block_page_temporary(page_id, unblock_date):
     """
     Block a Page for a specific time period.
