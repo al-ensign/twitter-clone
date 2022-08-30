@@ -24,7 +24,7 @@ from .services import (
     save_path,
 )
 
-from .s3_storage import get_presigned_url
+from .aws import S3Client
 
 from django.conf import settings
 
@@ -49,6 +49,11 @@ class UserViewSet(viewsets.ModelViewSet):
         "get_url_to_delete_picture": [OwnUserAccount],
     }
 
+    def get_permissions(self):
+        self.permission_classes = self.permissions_dict.get(self.action)
+        return super().get_permissions()
+        # return super(self.__class__, self).get_permissions()
+
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -59,10 +64,6 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Bad Request',
                          'message': serializer.is_valid()},
                         status=status.HTTP_400_BAD_REQUEST)
-
-    def get_permissions(self):
-        self.permission_classes = self.permissions_dict.get(self.action)
-        return super(self.__class__, self).get_permissions()
 
     @action(detail=True, methods=("patch",), permission_classes=[IsAdmin])
     def block_id(self, request, **kwargs):
@@ -102,9 +103,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
         file = request.data.get('file')
         file_name = f'user_{request.user.id}/{file}'
-        method = 'put_object'
         save_path(request.user.id, file_name)
-        data = get_presigned_url(file_name,method)
+        data = S3Client.get_presigned_url(file_name, method='put_object')
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
@@ -115,8 +115,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
 
         file_name = request.user.image_s3_path
-        method = 'get_object'
-        data = get_presigned_url(file_name, method)
+        data = S3Client.get_presigned_url(file_name, method='get_object')
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[OwnUserAccount])
@@ -125,9 +124,9 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Generates a pre-signed url to delete file from s3 bucket.
         """
+
         file_name = request.user.image_s3_path
-        method = 'delete_object'
-        data = get_presigned_url(file_name, method)
+        data = S3Client.get_presigned_url(file_name, method='delete_object')
         save_path(request.user.id, None)
         return HttpResponse(data, content_type='json')
 

@@ -41,7 +41,7 @@ from .services import (
     get_page_s3_path,
 )
 
-from users.s3_storage import get_presigned_url
+from users.aws import S3Client
 
 import logging
 
@@ -72,7 +72,9 @@ class PageViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
-        return super(self.__class__, self).get_permissions()
+        return super().get_permissions()
+        # return super(self.__class__, self).get_permissions()
+
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
     def get_url_to_upload_picture(self, request, **kwargs):
@@ -85,9 +87,8 @@ class PageViewSet(viewsets.ModelViewSet):
         page_id = kwargs.get("pk")
         file = request.data.get('file')
         file_name = f'page_{page_id}/{file}'
-        method = 'put_object'
-        save_path_s3(page_id, file_name)
-        data = get_presigned_url(file_name, method)
+        save_path_s3(page_id, file_name, )
+        data = S3Client.get_presigned_url(file_name, method='put_object')
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
@@ -99,8 +100,7 @@ class PageViewSet(viewsets.ModelViewSet):
 
         page_id = kwargs.get("pk")
         file_name = get_page_s3_path(page_id)
-        method = 'get_object'
-        data = get_presigned_url(file_name, method)
+        data = S3Client.get_presigned_url(file_name, method='get_object')
         return HttpResponse(data, content_type='json')
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
@@ -112,8 +112,7 @@ class PageViewSet(viewsets.ModelViewSet):
 
         page_id = kwargs.get("pk")
         file_name = get_page_s3_path(page_id)
-        method = 'delete_object'
-        data = get_presigned_url(file_name, method)
+        data = S3Client.get_presigned_url(file_name, method="delete_object")
         save_path_s3(page_id, None)
         return HttpResponse(data, content_type='json')
 
@@ -282,7 +281,8 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
-        return super(self.__class__, self).get_permissions()
+        return super().get_permissions()
+        # return super(self.__class__, self).get_permissions()
 
     @action(detail=True, methods=("patch",), permission_classes=[IsPublicPageOrFollower])
     def like_tweet(self, request, **kwargs):
@@ -334,7 +334,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
-        return super(self.__class__, self).get_permissions()
+        return super().get_permissions()
+        # return super(self.__class__, self).get_permissions()
 
 
 class TagViewSet(viewsets.ModelViewSet):
