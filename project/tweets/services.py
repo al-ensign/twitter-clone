@@ -1,6 +1,36 @@
 from datetime import datetime
 
+from django.http import QueryDict
+
 from .models import Page, Tweet
+
+from users.aws import S3Client
+
+import pathlib
+
+
+def get_file_extension(file):
+    return pathlib.Path(file).suffix
+
+
+def add_image_to_request(url, request_data):
+    if isinstance(request_data, QueryDict):
+        request_data._mutable = True
+        request_data["image"] = url
+        request_data._mutable = False
+        return
+    request_data['image'] = url
+
+
+def handle_page_image(image, request):
+    if image:
+        extension = get_file_extension(image.name)
+        file_name_str = request.data.get('name') + extension
+        file_name = f'{file_name_str}'
+        S3Client.upload_file(image, file_name)
+        add_image_to_request(file_name, request.data)
+        return
+    add_image_to_request('', request.data)
 
 
 def save_path_s3(page_id, file_name):

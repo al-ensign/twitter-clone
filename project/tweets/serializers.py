@@ -34,7 +34,11 @@ class PageSerializer(serializers.ModelSerializer):
             "tags": {
                 "required": False,
                 "allow_null": True
-            }
+            },
+            "path": {
+                "required": False,
+                "allow_null": True
+            },
         }
 
 

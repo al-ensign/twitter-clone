@@ -1,5 +1,4 @@
 from project.celery import app
-import boto3
 from django.conf import settings
 import logging
 from users.aws import SESClient

@@ -39,11 +39,10 @@ from .services import (
     unlike,
     save_path_s3,
     get_page_s3_path,
+    handle_page_image
 )
 
 from users.aws import S3Client
-
-import logging
 
 
 class PageViewSet(viewsets.ModelViewSet):
@@ -75,6 +74,12 @@ class PageViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
         # return super(self.__class__, self).get_permissions()
 
+    # def create(self, request, *args, **kwargs):
+    #     image = request.FILES.get('image')
+    #     if image:
+    #         handle_page_image(image, request)
+    #         print(request)
+    #     return super().create(request, *args, **kwargs)
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
     def get_url_to_upload_picture(self, request, **kwargs):

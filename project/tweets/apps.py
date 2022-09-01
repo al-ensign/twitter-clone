@@ -10,5 +10,5 @@ class TweetsConfig(AppConfig):
         # Implicitly connect signal handlers decorated with @receiver.
         from .signals import save_tweet_and_send_email
         # Explicitly connect a signal handler.
-        post_save.connect(save_tweet_and_send_email)
+        # post_save.connect(save_tweet_and_send_email)
 

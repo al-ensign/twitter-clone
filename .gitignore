@@ -23,6 +23,8 @@ celerybeat.pid
 # Postgres local folder
 ./project/db_data
 /db_data
+./project/debug_database
+./debug_database
 
 .idea/
 
