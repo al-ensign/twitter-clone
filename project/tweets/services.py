@@ -1,25 +1,7 @@
 from datetime import datetime
-
-from django.http import QueryDict
-
 from .models import Page, Tweet
-
 from users.aws import S3Client
-
-import pathlib
-
-
-def get_file_extension(file):
-    return pathlib.Path(file).suffix
-
-
-def add_image_to_request(url, request_data):
-    if isinstance(request_data, QueryDict):
-        request_data._mutable = True
-        request_data["image"] = url
-        request_data._mutable = False
-        return
-    request_data['image'] = url
+from .tools import add_image_to_request, get_file_extension
 
 
 def handle_page_image(image, request):
@@ -87,9 +69,8 @@ def send_follow_request(user_id, page_to_follow_id):
     """
 
     target_page = Page.objects.get(pk=page_to_follow_id)
-    page_queryset = Page.objects.filter(pk=page_to_follow_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
-    followers = page_queryset.values_list("followers", flat=True)
+    follow_requests = Page.pages.follow_requests(page_to_follow_id)
+    followers = Page.pages.followers(page_to_follow_id)
     if target_page.is_private:
         if int(user_id) in follow_requests:
             return None
@@ -112,9 +93,8 @@ def accept_one_follow_request(page_id, user_id):
     Moves User's ID from Page.follow_requests to Page.followers.
     """
 
-    page_queryset = Page.objects.filter(pk=page_id)
     page = Page.objects.get(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
 
     if int(user_id) in follow_requests:
         page.followers.add(user_id)
@@ -129,8 +109,7 @@ def accept_all_follow_requests(page_id):
     """
 
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     for user_id in follow_requests:
         page.followers.add(user_id)
         page.follow_requests.remove(user_id)
@@ -144,8 +123,7 @@ def reject_one_follow_request(page_id, user_id):
     """
 
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     if int(user_id) in follow_requests:
         page.follow_requests.remove(user_id)
         return page.save()
@@ -158,8 +136,7 @@ def reject_all_follow_requests(page_id):
     """
 
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     for user_id in follow_requests:
         page.follow_requests.remove(user_id)
         return page.save()
@@ -172,8 +149,7 @@ def unfollow(page_id, user_id):
     """
 
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    followers = page_queryset.values_list("followers", flat=True)
+    followers = Page.pages.followers(page_id)
     if int(user_id) not in followers:
         return None
     else:
@@ -188,8 +164,7 @@ def like(tweet_id, user_id):
     """
 
     tweet = Tweet.objects.get(pk=tweet_id)
-    tweet_queryset = Tweet.objects.filter(pk=tweet_id)
-    likes = tweet_queryset.values_list("like", flat=True)
+    likes = Tweet.tweets.likes(tweet_id)
     if user_id in likes:
         return None
     else:
@@ -203,8 +178,7 @@ def unlike(tweet_id, user_id):
     Removes User's ID from Tweet.like
     """
     tweet = Tweet.objects.get(pk=tweet_id)
-    tweet_queryset = Tweet.objects.filter(pk=tweet_id)
-    likes = tweet_queryset.values_list("like", flat=True)
+    likes = Tweet.tweets.likes(tweet_id)
 
     if user_id not in likes:
         return None

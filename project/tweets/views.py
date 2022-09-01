@@ -72,8 +72,9 @@ class PageViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
         return super().get_permissions()
-        # return super(self.__class__, self).get_permissions()
 
+    # TODO: add customized create and update methods to upload images via multipart/form-data
+    # TODO: custom funcs for the create method are in tweets.tools.py
     # def create(self, request, *args, **kwargs):
     #     image = request.FILES.get('image')
     #     if image:
@@ -287,7 +288,6 @@ class TweetViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
         return super().get_permissions()
-        # return super(self.__class__, self).get_permissions()
 
     @action(detail=True, methods=("patch",), permission_classes=[IsPublicPageOrFollower])
     def like_tweet(self, request, **kwargs):
@@ -340,7 +340,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         self.permission_classes = self.permissions_dict.get(self.action)
         return super().get_permissions()
-        # return super(self.__class__, self).get_permissions()
 
 
 class TagViewSet(viewsets.ModelViewSet):
