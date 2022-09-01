@@ -67,14 +67,14 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'debug_database',
-        # "ENGINE": os.getenv("DB_ENGINE", ),
-        # "NAME": os.getenv("DB_NAME"),
-        # "USER": os.getenv("DB_USER"),
-        # "PASSWORD": os.getenv("DB_PASSWORD"),
-        # "HOST": os.getenv("DB_HOST"),
-        # "PORT": os.getenv("DB_PORT"),
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': 'debug_database',
+        "ENGINE": os.getenv("DB_ENGINE", ),
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
@@ -145,8 +145,8 @@ RABBITMQ_PORT = os.getenv("RABBITMQ_PORT")
 RABBITMQ_USER = os.getenv("RABBITMQ_USER")
 RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
-# CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
