@@ -67,8 +67,8 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE", ),
-        "NAME": os.getenv("DB_NAME"),
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DB_NAME", "debug_database"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
@@ -145,7 +145,7 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ('json',)
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 

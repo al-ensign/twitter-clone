@@ -1,15 +1,8 @@
 from project.celery import app
-import boto3
 from django.conf import settings
 import logging
+from users.aws import SESClient
 
-
-client = boto3.client(
-    'ses',
-    region_name=settings.AWS_REGION,
-    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-)
 
 verified_sender = settings.DEFAULT_FROM_EMAIL
 
@@ -22,23 +15,11 @@ def send_email_to_followers(**kwargs):
     body = kwargs.get("body")
 
     logging.info(recipients)
-    client.send_email(
-        Destination={
-            'ToAddresses': recipients,
-        },
-        Message={
-            'Body': {
-                'Text': {
-                    'Charset': 'UTF-8',
-                    'Data': body,
-                },
-            },
-            'Subject': {
-                'Charset': 'UTF-8',
-                'Data': subject,
-            },
-        },
-        Source=verified_sender,
+    SESClient.send_email(
+        recipients,
+        verified_sender,
+        body,
+        subject,
     )
     logging.info("Done! Notifications are sent")
 

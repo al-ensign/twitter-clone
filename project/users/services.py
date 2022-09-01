@@ -6,6 +6,17 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+def save_path(user_id, file_name):
+
+    """
+    Sets s3 path to a file.
+    """
+
+    user = User.objects.get(pk=user_id)
+    user.image_s3_path = file_name
+    return user.save()
+
+
 def block_user(admin_id, user_to_block_id):
 
     """

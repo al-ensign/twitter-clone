@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.conf import settings
+from .managers import PagesManager, TweetsManager
 
 
 class Tag(models.Model):
@@ -26,6 +27,9 @@ class Page(models.Model):
     is_blocked = models.BooleanField(default=False)
     unblock_date = models.DateTimeField(null=True, blank=True)
 
+    objects = models.Manager()
+    pages = PagesManager()
+
 
 class Tweet(models.Model):
     owner = models.ForeignKey(
@@ -35,6 +39,9 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date created")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Date updated")
     like = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="likes")
+
+    objects = models.Manager()
+    tweets = TweetsManager()
 
 
 class Comment(models.Model):

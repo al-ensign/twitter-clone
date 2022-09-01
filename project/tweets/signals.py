@@ -9,29 +9,19 @@ User = get_user_model()
 
 
 @receiver(post_save, sender=Tweet)
-def save_tweet_and_send_email(sender, instance, **kwargs):
+def save_tweet_and_send_email(instance, created, **kwargs):
 
     logging.info("Received Tweet saved signal")
-
-    tweet = Tweet.objects.get(pk=instance.id)
-    page_id = tweet.owner_id
-
-    page_queryset = Page.objects.filter(pk=page_id)
-    body = tweet.text
-    list_of_followers = page_queryset.values_list("followers", flat=True)
-    recipients = []
-
-    logging.info("Collecting users emails")
-
-    for follower in list_of_followers:
-        user = User.objects.get(pk=follower)
-        email = user.email
-        recipients.append(email)
-
-    logging.info("Send celery task")
-
-    send_email_to_followers.delay(body=body, recipients=recipients)
-
-    logging.info("Send celery task")
+    if created:
+        tweet = Tweet.objects.get(pk=instance.id)
+        followers = Page.pages.followers(tweet.owner_id)
+        recipients = []
+        logging.info("Collecting users emails")
+        for follower in followers:
+            user = User.objects.get(pk=follower)
+            recipients.append(user.email)
+            logging.info("Send celery task")
+            send_email_to_followers.delay(body=tweet.text, recipients=recipients)
 
 
+post_save.connect(save_tweet_and_send_email, sender=Tweet)
