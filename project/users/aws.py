@@ -8,7 +8,7 @@ class ClientMeta(type):
 
     @property
     def client(cls):
-        if not getattr(cls,"_client", None):
+        if not getattr(cls, "_client", None):
             service_name = getattr(cls, "_service_name")
             client = boto3.client(
                 service_name,
@@ -21,7 +21,7 @@ class ClientMeta(type):
 
 
 class SESClient(metaclass=ClientMeta):
-    _service_name = "ses"
+    _service_name = 'ses'
 
     @classmethod
     def send_email(cls, recipients, verified_sender, body, subject):

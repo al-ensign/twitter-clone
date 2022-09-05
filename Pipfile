@@ -12,6 +12,9 @@ celery = "*"
 psycopg2-binary = "*"
 djangorestframework = "*"
 pika = "*"
+fastapi = {extras = ["all"], version = "*"}
+uvicorn = {extras = ["standard"], version = "*"}
+pydantic = "*"
 
 [dev-packages]
 
