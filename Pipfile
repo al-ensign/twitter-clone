@@ -15,6 +15,7 @@ pika = "*"
 fastapi = {extras = ["all"], version = "*"}
 uvicorn = {extras = ["standard"], version = "*"}
 pydantic = "*"
+botocore = "*"
 
 [dev-packages]
 

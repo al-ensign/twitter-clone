@@ -8,13 +8,11 @@ class Subscriber:
         self.config = configs
 
     def callback(self, ch, method, properties, body):
-        # binding_key = method.routing_key
         print('Received message from core app')
         data = json.loads(body)
         print(data)
 
     def setup_connection(self):
-        # channel = self.connection.channel()
         param = pika.ConnectionParameters(
             host=self.config['host'],
             port=self.config['port'],

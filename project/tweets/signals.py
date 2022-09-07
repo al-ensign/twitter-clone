@@ -67,6 +67,7 @@ def save_page_stats(instance, **kwargs):
         "tweets": page.tweets.count(),
         "likes": total_likes_received(page),
         "is_blocked": page.is_blocked,
+        "status": "Exists"
     }
 
     logging.info("Sending message to publisher")

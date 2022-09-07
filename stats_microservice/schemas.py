@@ -1,42 +1,15 @@
 from pydantic import BaseModel
-from typing import List
 
 
-class TweetBase(BaseModel):
-    tweet_id: int
-    likes: int
-
-    class Config():
-        orm_mode = True
-
-
-class ShowPageWithTweetsList(BaseModel):
+class PageModel(BaseModel):
+    user_id: int
     page_id: int
-    owner_id: int
     followers: int
     follow_requests: int
-    is_blocked: bool
-    tweets: List[TweetBase] = []
-
-    class Config():
-        orm_mode = True
-
-
-class Tweet(BaseModel):
-    tweet_id: int
-    owner_id: int
+    tweets: int
     likes: int
-
-    class Config():
-        orm_mode = True
-
-
-class Page(BaseModel):
-    page_id: int
-    owner_id: int
-    followers: int
-    follow_requests: int
     is_blocked: bool
+    status: str
 
     class Config():
         orm_mode = True
