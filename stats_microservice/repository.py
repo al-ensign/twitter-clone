@@ -87,7 +87,7 @@ class StatsRepository:
         )
         return response
 
-    def delete_recipe(self, user_id, page_id):
+    def delete_page(self, user_id, page_id):
         response = self.table.delete_item(
             Key={'user_id': user_id, 'page_id': page_id}
         )
