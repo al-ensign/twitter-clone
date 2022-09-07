@@ -1,17 +1,20 @@
 import pika
-import os
 import json
+import os
 
 
 class Subscriber:
     def __init__(self, configs):
         self.config = configs
-        self.connection = self._create_connection()
 
-    def __del__(self):
-        self.connection.close()
+    def callback(self, ch, method, properties, body):
+        # binding_key = method.routing_key
+        print('Received message from core app')
+        data = json.loads(body)
+        print(data)
 
-    def _create_connection(self):
+    def setup_connection(self):
+        # channel = self.connection.channel()
         param = pika.ConnectionParameters(
             host=self.config['host'],
             port=self.config['port'],
@@ -21,19 +24,15 @@ class Subscriber:
                 self.config["password"]
             ),
         )
-        return pika.BlockingConnection(param)
-
-    def callback(self, channel, method, properties, body):
-        binding_key = method.routing_key
-        print('Received message from core app')
-        data = json.loads(body)
-        print(data)
-
-    def setup(self):
-        channel = self.connection.channel()
+        connection = pika.BlockingConnection(param)
+        channel = connection.channel()
         channel.exchange_declare(
             exchange=self.config['exchange'],
             exchange_type=self.config['type'],
+        )
+
+        channel.queue_declare(
+            queue=self.config["queue"]
         )
 
         # Binds the queue to the specified exchange
@@ -44,7 +43,7 @@ class Subscriber:
         )
         channel.basic_consume(
             queue=self.config["queue"],
-            on_message_callback=self.callback(),
+            on_message_callback=self.callback,
             auto_ack=True
         )
         print("Waiting for data for " + self.config["queue"] + ". To exit press CTRL+C")
@@ -63,7 +62,8 @@ configs = {
     "exchange": os.getenv('EXCHANGE_NAME'),
     "type": os.getenv('EXCHANGE_TYPE'),
     "queue": os.getenv('QUEUE_NAME'),
+    "routing_key": os.getenv("ROUTING_KEY"),
 }
 
 subscriber = Subscriber(configs)
-subscriber.setup()
+

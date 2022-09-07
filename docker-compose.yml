@@ -52,7 +52,7 @@ services:
         build:
           context: ./stats_microservice
           dockerfile: Dockerfile
-        container_name: fastapi
+        container_name: stats
         env_file:
           - .env
         command: bash ./entrypoint.sh
@@ -62,3 +62,4 @@ services:
           - "./stats_microservice/:/app/"
         depends_on:
           - rabbit
+          - core
