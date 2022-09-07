@@ -1,6 +1,7 @@
 import pika
 import json
 import os
+from repository import  StatsRepository
 
 
 class Subscriber:
@@ -9,8 +10,18 @@ class Subscriber:
 
     def callback(self, ch, method, properties, body):
         print('Received message from core app')
-        data = json.loads(body)
-        print(data)
+        page = json.loads(body)
+        print(page)
+        if len(page) == 3 and page["status"] == "Deleted":
+            StatsRepository.delete_page(page["user_id"], page["page_id"])
+        elif len(page) == 4:
+            StatsRepository.update_page_tweets(page)
+        else:
+            response = StatsRepository.get_page(page["user_id"], page["page_id"])
+            if not response["Item"]:
+                StatsRepository.add_page(page)
+            else:
+                StatsRepository.update_page_full(page)
 
     def setup_connection(self):
         param = pika.ConnectionParameters(
