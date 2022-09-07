@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from django.db.models import Count
+
 from .models import Page, Tweet
 from users.aws import S3Client
 from .tools import add_image_to_request, get_file_extension
@@ -173,10 +176,12 @@ def like(tweet_id, user_id):
 
 
 def unlike(tweet_id, user_id):
+
     """
     Unlike a Tweet.
     Removes User's ID from Tweet.like
     """
+
     tweet = Tweet.objects.get(pk=tweet_id)
     likes = Tweet.tweets.likes(tweet_id)
 
@@ -185,3 +190,13 @@ def unlike(tweet_id, user_id):
     else:
         tweet.like.remove(user_id)
         return tweet.save()
+
+
+def total_likes_received(page):
+
+    """
+    Gets total number of likes on the page.
+    If None, returns 0.
+    """
+
+    return page.tweets.aggregate(total_likes=Count('like'))['total_likes'] or 0

@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+boto3 = "*"
+pyjwt = "*"
+python-dotenv = "*"
+celery = "*"
+psycopg2-binary = "*"
+djangorestframework = "*"
+pika = "*"
+fastapi = {extras = ["all"], version = "*"}
+uvicorn = {extras = ["standard"], version = "*"}
+pydantic = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
