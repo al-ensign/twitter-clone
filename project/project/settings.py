@@ -130,7 +130,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-TOKEN_TYPE = "Bearer"
+TOKEN_TYPE = os.getenv("TOKEN_TYPE")
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
