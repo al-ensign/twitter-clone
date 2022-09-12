@@ -1,9 +1,7 @@
 import pika
 import json
 import os
-import sys
-
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import time
 
 from repository import StatsRepository
 from database import initialize_db
@@ -87,3 +85,6 @@ configs = {
 }
 
 subscriber = Subscriber(configs)
+
+time.sleep(15)
+subscriber.setup_connection()

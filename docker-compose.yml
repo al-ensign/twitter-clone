@@ -63,3 +63,17 @@ services:
         depends_on:
           - rabbit
           - core
+
+
+    queue:
+        build:
+          context: ./stats_microservice
+          dockerfile: Dockerfile
+        container_name: queue
+        env_file:
+          - .env
+        command: 'python subscriber.py'
+        depends_on:
+          - rabbit
+          - core
+          - microservice

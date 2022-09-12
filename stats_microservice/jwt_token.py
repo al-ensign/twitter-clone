@@ -1,14 +1,10 @@
 import os
 import jwt
-import logging
 import os
 import sys
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-
-logger = logging.getLogger(__name__)
 
 
 def decode_token_and_get_user(request):
@@ -24,9 +20,9 @@ def decode_token_and_get_user(request):
     try:
         payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
-        raise logger.error("Access_token expired"),
+        raise ValueError("Access_token expired")
     except IndexError:
-        raise logger.error("Token prefix missing")
+        raise BaseException("Token prefix missing")
 
     user_id = payload["sub"]
 
