@@ -1,7 +1,16 @@
 import pika
 import json
 import os
-from repository import  StatsRepository
+import sys
+
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from repository import StatsRepository
+from database import initialize_db
+
+db = initialize_db()
+
+dynamo = StatsRepository(db)
 
 
 class Subscriber:
@@ -11,17 +20,20 @@ class Subscriber:
     def callback(self, ch, method, properties, body):
         print('Received message from core app')
         page = json.loads(body)
-        print(page)
         if len(page) == 3 and page["status"] == "Deleted":
-            StatsRepository.delete_page(page["user_id"], page["page_id"])
+            dynamo.delete_page(user_id=page["user_id"], page_id=page["page_id"])
+            print(f'Deleted page {page["page_id"]}')
         elif len(page) == 4:
-            StatsRepository.update_page_tweets(page)
+            dynamo.update_page_tweets(page=page)
+            print(f'Updated tweets data of page {page["page_id"]}')
         else:
-            response = StatsRepository.get_page(page["user_id"], page["page_id"])
-            if not response["Item"]:
-                StatsRepository.add_page(page)
+            response = dynamo.get_page(user_id=page["user_id"], page_id=page["page_id"])
+            if response is None:
+                dynamo.add_page(page=page)
+                print(f'Added page {page["page_id"]}')
             else:
-                StatsRepository.update_page_full(page)
+                dynamo.update_page_full(page=page)
+                print(f'Updated page {page["page_id"]}')
 
     def setup_connection(self):
         param = pika.ConnectionParameters(
@@ -75,4 +87,3 @@ configs = {
 }
 
 subscriber = Subscriber(configs)
-

@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from .models import Tweet, Page
 from .tasks import send_email_to_followers
@@ -67,7 +67,7 @@ def save_page_stats(instance, **kwargs):
         "tweets": page.tweets.count(),
         "likes": total_likes_received(page),
         "is_blocked": page.is_blocked,
-        "status": "Exists"
+        "status": "Exists",
     }
 
     logging.info("Sending message to publisher")
@@ -77,15 +77,15 @@ def save_page_stats(instance, **kwargs):
 post_save.connect(save_page_stats, sender=Page)
 
 
-@receiver(post_delete, sender=Page)
+@receiver(pre_delete, sender=Page)
 def page_deleted(instance, **kwargs):
     page = Page.objects.get(pk=instance.id)
     data = {
         "page_id": instance.id,
-        "owner_id": page.owner_id,
-        "status": "Deleted"
+        "user_id": page.owner_id,
+        "status": "Deleted",
     }
     publisher.publish(json.dumps(data))
 
 
-post_delete.connect(page_deleted, sender=Page)
+pre_delete.connect(page_deleted, sender=Page)

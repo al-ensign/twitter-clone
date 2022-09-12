@@ -7,22 +7,18 @@ User = get_user_model()
 
 
 def save_path(user_id, file_name):
-
     """
     Sets s3 path to a file.
     """
-
     user = User.objects.get(pk=user_id)
     user.image_s3_path = file_name
     return user.save()
 
 
 def block_user(admin_id, user_to_block_id):
-
     """
     Block user: Set User.is_blocked = True
     """
-
     admin = User.objects.get(pk=admin_id)
     user_to_block = User.objects.get(pk=user_to_block_id)
     if admin.Roles.ADMIN:
@@ -31,11 +27,9 @@ def block_user(admin_id, user_to_block_id):
 
 
 def unblock_user(admin_id, blocked_user):
-
     """
     Unblock user: Set User.is_blocked = True
     """
-
     admin = User.objects.get(pk=admin_id)
     blocked_user = User.objects.get(pk=blocked_user)
     if admin.Roles.ADMIN:
@@ -44,11 +38,9 @@ def unblock_user(admin_id, blocked_user):
 
 
 def verify_user_login(username, password):
-
     """
     Verify credentials to Login User
     """
-
     if not username or not password:
         raise exceptions.AuthenticationFailed('Username and Password are required')
 
@@ -63,11 +55,9 @@ def verify_user_login(username, password):
 
 
 def verify_refresh_token(refresh_token):
-
     """
     Verify and decode Refresh token to get a valid User
     """
-
     if not refresh_token:
         raise exceptions.AuthenticationFailed(
             "Authentication credentials were not provided."

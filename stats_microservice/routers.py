@@ -1,4 +1,9 @@
 from fastapi import APIRouter, Request
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from schemas import PageModel
 from repository import StatsRepository
 from .token import decode_token_and_get_user

@@ -1,8 +1,12 @@
 from botocore.exceptions import ClientError
 from boto3.resources.base import ServiceResource
 from boto3.dynamodb.conditions import Key
-import os
 import logging
+import os
+import sys
+
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +35,7 @@ class StatsRepository:
     def get_page(self, user_id, page_id):
         try:
             response = self.table.get_item(Key={'user_id': user_id, "page_id": page_id})
-            return response['Item']
+            return response.get('Item')
         except ClientError as e:
             raise ValueError(e.response['Error']['Message'])
 
@@ -68,12 +72,10 @@ class StatsRepository:
             UpdateExpression="""
                 set
                     followers=:followers,
-                    follow_requests=:follow_requests
+                    follow_requests=:follow_requests,
                     tweets=:tweets,
                     likes=:likes,
-                    is_blocked=:is_blocked,
-                    status=:status
-                    
+                    is_blocked=:is_blocked            
             """,
             ExpressionAttributeValues={
                 ':followers': page.get('followers'),
@@ -81,7 +83,6 @@ class StatsRepository:
                 ':tweets': page.get('tweets'),
                 ':likes': page.get('likes'),
                 ':is_blocked': page.get('is_blocked'),
-                ':status': page.get('status'),
             },
             ReturnValues="UPDATED_NEW"
         )

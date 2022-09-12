@@ -84,12 +84,10 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
     def get_url_to_upload_picture(self, request, **kwargs):
-
         """
         Generates a pre-signed url to upload a file to s3 bucket.
         Sets Page.path to file's s3 path (key).
         """
-
         page_id = kwargs.get("pk")
         file = request.data.get('file')
         file_name = f'page_{page_id}/{file}'
@@ -99,11 +97,9 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
     def get_url_to_picture(self, request, **kwargs):
-
         """
         Generates pre-signed url to get a file from s3 bucket.
         """
-
         page_id = kwargs.get("pk")
         file_name = get_page_s3_path(page_id)
         data = S3Client.get_presigned_url(file_name, method='get_object')
@@ -111,11 +107,9 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("post",), permission_classes=[IsOwnerOfPage])
     def get_url_to_delete_picture(self, request, **kwargs):
-
         """
         Generates a pre-signed url to delete file from s3 bucket.
         """
-
         page_id = kwargs.get("pk")
         file_name = get_page_s3_path(page_id)
         data = S3Client.get_presigned_url(file_name, method="delete_object")
@@ -124,12 +118,10 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsAuthenticated])
     def send_follow_request_to_page(self, request, **kwargs):
-
         """
         Send a follow request to someone's Page.
         User can follow a Page only from one of their pages.
         """
-
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_to_follow_id = serializer.validated_data.get("page_id")
@@ -146,11 +138,9 @@ class PageViewSet(viewsets.ModelViewSet):
         url_path=r"accept_follow_request"
     )
     def accept_follow_request_to_page(self, request, **kwargs):
-
         """
         Accept an incoming follow request.
         """
-
         serializer = AcceptRejectFollowerSerializer(data=request.data)
         if serializer.is_valid():
             page_id = self.kwargs["pk"]
@@ -166,11 +156,9 @@ class PageViewSet(viewsets.ModelViewSet):
         url_path=r"reject_follow_request",
     )
     def reject_follow_request_to_page(self, request, **kwargs):
-
         """
         Reject an incoming follow request.
         """
-
         serializer = AcceptRejectFollowerSerializer(data=request.data)
         if serializer.is_valid():
             page_id = self.kwargs["pk"]
@@ -187,11 +175,9 @@ class PageViewSet(viewsets.ModelViewSet):
         url_path=r"accept_all_follow_requests",
     )
     def accept_all_follow_requests_to_page(self, request, **kwargs):
-
         """
         Accept all incoming follow requests.
         """
-
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -207,11 +193,9 @@ class PageViewSet(viewsets.ModelViewSet):
         url_path=r"reject_all_follow_requests",
     )
     def reject_all_follow_requests_to_page(self, request, **kwargs):
-
         """
         Reject all incoming follow requests.
         """
-
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -222,11 +206,9 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsAuthenticated])
     def unfollow_page(self, request, **kwargs):
-
         """
         Unfollow a Page.
         """
-
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -238,12 +220,10 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsModerator | IsAdmin])
     def temporary_block_page(self, request, **kwargs):
-
         """
         Block a Page for a specific time period.
         Permission is given to Moderator and Admin.
         """
-
         serializer = TempBlockPageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -255,12 +235,10 @@ class PageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsAdmin])
     def unlimited_block_page(self, request, **kwargs):
-
         """
         Block a Page forever.
         Permission is given to Admin only.
         """
-
         serializer = OnePageSerializer(data=request.data)
         if serializer.is_valid():
             page_id = serializer.validated_data.get("page_id")
@@ -291,12 +269,10 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsPublicPageOrFollower])
     def like_tweet(self, request, **kwargs):
-
         """
         Like a Tweet.
         Permission is given to an Authenticated User.
         """
-
         serializer = LikeUnlikeTweetSerializer(data=request.data)
         if serializer.is_valid():
             tweet_id = serializer.validated_data.get("tweet_id")
@@ -308,12 +284,10 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=("patch",), permission_classes=[IsPublicPageOrFollower])
     def unlike_tweet(self, request, **kwargs):
-
         """
         Unlike a Tweet.
         Permission is given to an Authenticated User.
         """
-
         serializer = LikeUnlikeTweetSerializer(data=request.data)
         if serializer.is_valid():
             tweet_id = serializer.validated_data.get("tweet_id")
@@ -346,4 +320,3 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
-
