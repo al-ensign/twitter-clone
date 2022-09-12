@@ -4,6 +4,9 @@ from boto3.dynamodb.conditions import Key
 import logging
 import os
 import sys
+from database import DynamoBase
+import settings
+
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -12,14 +15,17 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger(__name__)
 
 
-TABLE_NAME = os.getenv("DYNAMODB_TABLE")
+class StatsRepository(DynamoBase):
+    conf = {
+        'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
+        'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY,
+        'region_name': settings.AWS_REGION
+    }
 
-
-class StatsRepository:
-
-    def __init__(self, db: ServiceResource, ) -> None:
-        self.__db = db
-        self.table = self.__db.Table(TABLE_NAME)
+    def __init__(self, conf):
+        self.conf = conf
+        DynamoBase.__init__(self, self.conf)
+        self.table = self.get_table()
 
     def get_all_pages(self, user_id):
         try:
@@ -30,7 +36,7 @@ class StatsRepository:
                 err.response['Error']['Code'], err.response['Error']['Message'])
             raise
         else:
-            return response['Items']
+            return response["Items"]
 
     def get_page(self, user_id, page_id):
         try:
@@ -93,3 +99,12 @@ class StatsRepository:
             Key={'user_id': user_id, 'page_id': page_id}
         )
         return response
+
+
+conf = {
+        'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
+        'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY,
+        'region_name': settings.AWS_REGION
+    }
+
+dynamo = StatsRepository(conf)

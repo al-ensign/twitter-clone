@@ -8,21 +8,21 @@ from boto3.resources.base import ServiceResource
 import settings
 
 
-class ResourceMeta(type):
+class DynamoBase:
 
-    @property
-    def resource(cls):
-        if not getattr(cls, "_client", None):
-            service_name = getattr(cls, "_service_name")
-            resource = boto3.resource(
-                service_name,
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                region_name=settings.AWS_REGION
-            )
-            setattr(cls, "_client", resource)
-            return getattr(cls, "_resource")
+    def __init__(self, conf):
+        self.conf = conf
+        self.table_name = settings.DYNAMODB_TABLE_NAME
+
+        try:
+            self.dynamodb = boto3.resource('dynamodb', **conf)
+        except Exception as err:
+            print("{} - {}".format(__name__, err))
+            sys.exit(1)
+
+    def get_table(self):
+        return self.dynamodb.Table(self.table_name)
 
 
-class DynamoDB(metaclass=ResourceMeta):
-    _service_name = 'dynamodb'
+
+

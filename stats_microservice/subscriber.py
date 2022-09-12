@@ -2,13 +2,7 @@ import pika
 import json
 import os
 import time
-
-from repository import StatsRepository
-from database import DynamoDB
-
-db = DynamoDB()
-
-dynamo = StatsRepository(db)
+from repository import dynamo
 
 
 class Subscriber:
