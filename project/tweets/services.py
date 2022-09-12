@@ -182,4 +182,4 @@ def total_likes_received(page):
     Gets total number of likes on the page.
     If None, returns 0.
     """
-    return page.tweets.aggregate(total_likes=Count('like'))['total_likes'] or 0
+    return Page.pages.total_likes(page.id) or 0

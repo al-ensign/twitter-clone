@@ -4,9 +4,9 @@ import os
 import time
 
 from repository import StatsRepository
-from database import initialize_db
+from database import DynamoDB
 
-db = initialize_db()
+db = DynamoDB()
 
 dynamo = StatsRepository(db)
 
