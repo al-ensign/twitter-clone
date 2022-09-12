@@ -38,7 +38,6 @@ services:
 
     celery:
         build: ./project
-#        image: celery
         container_name: celery
         env_file:
           - .env
@@ -48,3 +47,33 @@ services:
         depends_on:
           - rabbit
           - core
+
+    microservice:
+        build:
+          context: ./stats_microservice
+          dockerfile: Dockerfile
+        container_name: stats
+        env_file:
+          - .env
+        command: bash ./entrypoint.sh
+        ports:
+          - "8001:8001"
+        volumes:
+          - "./stats_microservice/:/app/"
+        depends_on:
+          - rabbit
+          - core
+
+
+    queue:
+        build:
+          context: ./stats_microservice
+          dockerfile: Dockerfile
+        container_name: queue
+        env_file:
+          - .env
+        command: 'python subscriber.py'
+        depends_on:
+          - rabbit
+          - core
+          - microservice

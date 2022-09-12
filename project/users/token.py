@@ -8,6 +8,9 @@ User = get_user_model()
 
 
 def generate_token(exp, user: User) -> str:  # noqa
+    """
+    Generates JWT token.
+    """
     token_payload = {
         "sub": user.id,
         "exp": exp,

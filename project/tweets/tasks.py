@@ -15,11 +15,11 @@ def send_email_to_followers(**kwargs):
     body = kwargs.get("body")
 
     logging.info(recipients)
-    SESClient.send_email(
-        recipients,
-        verified_sender,
-        body,
-        subject,
+    SESClient().send_email(
+        recipients=recipients,
+        body=body,
+        subject=subject,
+        verified_sender=verified_sender
     )
     logging.info("Done! Notifications are sent")
 
