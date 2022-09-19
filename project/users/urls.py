@@ -14,5 +14,3 @@ urlpatterns = [
     ),
     path("", include(router_user.urls)),
 ]
-print(urlpatterns)
-

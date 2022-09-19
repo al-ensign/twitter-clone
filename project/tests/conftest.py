@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 import factory
-import test_factory
+from . import test_factory
 
 from tweets.models import Page, Tweet
 from django.contrib.auth import get_user_model
@@ -28,8 +28,15 @@ def user(db):
 
 @pytest.fixture()
 def auth_client(user, client):
+    payload = {
+        "username": user.username,
+        "password": "123456789"
+    }
+    r = client.post('/api/v1/token', payload, format="json")
+    response = r.json()
+    token = response["access_token"]
     client.credentials(
-        HTTP_AUTHORIZATION=f'Bearer {user.token}'
+        HTTP_AUTHORIZATION=f'Bearer {token}'
     )
     return client
 
@@ -48,8 +55,15 @@ def admin_user(db):
 
 @pytest.fixture()
 def admin_client(admin_user, client):
+    payload = {
+        "username": admin_user.username,
+        "password": "123456789"
+    }
+    r = client.post('/api/v1/token', payload, format="json")
+    response = r.json()
+    token = response["access_token"]
     client.credentials(
-        HTTP_AUTHORIZATION=f'Bearer {admin_user.token}'
+        HTTP_AUTHORIZATION=f'Bearer {token}'
     )
     return client
 
@@ -82,18 +96,6 @@ def follow_request_private_page(private_page, admin_user):
 
 
 @pytest.fixture()
-def follow_request_public_page(
-        public_page,
-        admin_user,
-        admin_client
-):
-    test_factory.PageFactory.create_batch(10, page=public_page)
-    response = admin_client.get(f'pages/{public_page.id}/send_follow_request_to_page/')
-    target = Page.objects.filter(pk=public_page.id).first()
-    return target
-
-
-@pytest.fixture()
 def tweet(public_page):
     return test_factory.TweetFactory(
         owner=public_page
@@ -101,12 +103,19 @@ def tweet(public_page):
 
 
 @pytest.fixture()
-def like_tweet(
+def liked_tweet(
         admin_user,
         admin_client,
         tweet
 ):
-    response = admin_client.patch(f'/tweets/{tweet.id}/like_tweet/')
+    payload = {
+        "tweet_id": tweet.id
+    }
+    response = admin_client.patch(
+        f'api/v1/tweets/{tweet.id}/like_tweet/',
+        payload,
+        format="json"
+    )
     target = Tweet.objects.filter(pk=tweet.id).first()
     return target
 
