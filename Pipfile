@@ -16,6 +16,10 @@ fastapi = {extras = ["all"], version = "*"}
 uvicorn = {extras = ["standard"], version = "*"}
 pydantic = "*"
 botocore = "*"
+pytest-django = "*"
+pytest = "*"
+faker = "*"
+factory-boy = "*"
 
 [dev-packages]
 
