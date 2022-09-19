@@ -21,10 +21,11 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.django_db
 def test_pages_list(auth_client, pages):
+
     response = auth_client.get("/api/v1/pages")
 
-    assert isinstance(response.data, list)
-    assert len(response.data) == 10
+    assert isinstance(response.content, list)
+    assert len(response.content) == 10
     assert response.status_code == status.HTTP_200_OK
 
 

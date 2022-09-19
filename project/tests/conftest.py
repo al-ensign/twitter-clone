@@ -36,7 +36,7 @@ def auth_client(user, client):
     response = r.json()
     token = response["access_token"]
     client.credentials(
-        HTTP_AUTHORIZATION=f'Bearer {token}'
+        HTTP_AUTHORIZATION='Bearer' + str({token})
     )
     return client
 
@@ -63,7 +63,7 @@ def admin_client(admin_user, client):
     response = r.json()
     token = response["access_token"]
     client.credentials(
-        HTTP_AUTHORIZATION=f'Bearer {token}'
+        HTTP_AUTHORIZATION='Bearer' + str({token})
     )
     return client
 
