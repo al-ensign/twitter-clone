@@ -33,19 +33,8 @@ def auth_client(user, client):
         "username": user.username,
         "password": "123456789"
     }
-    # breakpoint()
-    r = client.post('/api/v1/token', payload, format="json")
-    response = r.json()
-    # breakpoint()
-    token = response["access_token"]
-    # type_data = type(token)
-    # token_str = str(token)
-    # breakpoint()
     client.force_authenticate(user=user)
-    # client.credentials(
-    #     Authorization=f'Bearer {token}'
-    # )
-    # breakpoint()
+
     return client
 
 
@@ -67,17 +56,8 @@ def admin_client(admin_user, client):
         "username": admin_user.username,
         "password": "123456789"
     }
-    # breakpoint()
-    r = client.post('/api/v1/token', payload, format="json")
-    response = r.json()
-    # breakpoint()
-    token = response["access_token"]
-    # breakpoint()
     client.force_authenticate(user=admin_user)
-    # client.credentials(
-    #     Authorization=f'Bearer {str(token)}'
-    # )
-    # breakpoint()
+
     return client
 
 
