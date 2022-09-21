@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 import factory
 from . import test_factory
+from django.db.models.signals import post_save, post_delete, pre_delete
 
 from tweets.models import Page, Tweet
 from django.contrib.auth import get_user_model
@@ -32,12 +33,19 @@ def auth_client(user, client):
         "username": user.username,
         "password": "123456789"
     }
+    # breakpoint()
     r = client.post('/api/v1/token', payload, format="json")
     response = r.json()
+    # breakpoint()
     token = response["access_token"]
-    client.credentials(
-        HTTP_AUTHORIZATION='Bearer' + str({token})
-    )
+    # type_data = type(token)
+    # token_str = str(token)
+    # breakpoint()
+    client.force_authenticate(user=user)
+    # client.credentials(
+    #     Authorization=f'Bearer {token}'
+    # )
+    # breakpoint()
     return client
 
 
@@ -59,12 +67,17 @@ def admin_client(admin_user, client):
         "username": admin_user.username,
         "password": "123456789"
     }
+    # breakpoint()
     r = client.post('/api/v1/token', payload, format="json")
     response = r.json()
+    # breakpoint()
     token = response["access_token"]
-    client.credentials(
-        HTTP_AUTHORIZATION='Bearer' + str({token})
-    )
+    # breakpoint()
+    client.force_authenticate(user=admin_user)
+    # client.credentials(
+    #     Authorization=f'Bearer {str(token)}'
+    # )
+    # breakpoint()
     return client
 
 
@@ -86,7 +99,7 @@ def public_page(user):
 
 @pytest.fixture()
 def pages():
-    return test_factory.PageFactory.create_batch(10)
+    return test_factory.PageFactory.create_batch(5)
 
 
 @pytest.fixture()
@@ -112,10 +125,17 @@ def liked_tweet(
         "tweet_id": tweet.id
     }
     response = admin_client.patch(
-        f'api/v1/tweets/{tweet.id}/like_tweet/',
+        f'/api/v1/tweets/{tweet.id}/like_tweet/',
         payload,
         format="json"
     )
     target = Tweet.objects.filter(pk=tweet.id).first()
     return target
+
+
+@pytest.fixture(autouse=True)
+def mute_signals(request):
+    post_save.receivers = []
+    post_delete.receivers = []
+    pre_delete.receivers = []
 

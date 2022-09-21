@@ -21,11 +21,10 @@ pytestmark = pytest.mark.django_db
 
 @pytest.mark.django_db
 def test_pages_list(auth_client, pages):
+    response = auth_client.get("/api/v1/pages/")
 
-    response = auth_client.get("/api/v1/pages")
-
-    assert isinstance(response.content, list)
-    assert len(response.content) == 10
+    assert isinstance(response.data, list)
+    assert len(response.data) == 5
     assert response.status_code == status.HTTP_200_OK
 
 
@@ -37,7 +36,7 @@ def test_page_create(user, auth_client):
         "owner": user.id
     }
     response = auth_client.post(
-        "api/v1/pages/",
+        "/api/v1/pages/",
         payload,
         format="json"
     )
@@ -55,7 +54,7 @@ def test_follow_public_page(
         "page_id": public_page.id
     }
     response = admin_client.patch(
-        f'api/v1/pages/{public_page.id}/send_follow_request_to_page/',
+        f'/api/v1/pages/{public_page.id}/send_follow_request_to_page/',
         payload,
         format="json"
     )
@@ -75,12 +74,11 @@ def test_follow_private_page(
         "page_id": private_page.id
     }
     response = admin_client.patch(
-        f'api/v1/pages/{private_page.id}/send_follow_request_to_page/',
+        f'/api/v1/pages/{private_page.id}/send_follow_request_to_page/',
         payload,
         format="json"
     )
     target = Page.objects.filter(pk=private_page.id).first()
-
     assert response.status_code == status.HTTP_200_OK
     assert admin_user in target.follow_requests.all()
 
@@ -96,11 +94,10 @@ def test_accept_follow_request(
         "user_id": admin_user.id
     }
     response = auth_client.patch(
-        f'api/v1/pages/{follow_request_private_page.id}/accept_follow_request/',
+        f'/api/v1/pages/{follow_request_private_page.id}/accept_follow_request/',
         payload,
         format="json"
     )
-
     target = Page.objects.filter(pk=follow_request_private_page.id).first()
 
     assert response.status_code == status.HTTP_200_OK
@@ -117,13 +114,11 @@ def test_tweet_create(
         "text": "string",
         "owner": public_page.id
     }
-
     response = auth_client.post(
-        f"api/v1/tweets/",
-        payload,
+        path=f"/api/v1/tweets/",
+        data=payload,
         format="json"
     )
-
     target = Tweet.objects.filter(owner=public_page.id).first()
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -138,15 +133,19 @@ def test_like_tweet(
         tweet
 ):
     payload = {
-        "tweet_id": tweet.id
+        "tweet_id": tweet.id,
+        "page_id": tweet.owner.id
     }
     response = admin_client.patch(
-        f'api/v1/tweets/{tweet.id}/like_tweet/',
+        f'/api/v1/tweets/{tweet.id}/like_tweet/',
         payload,
         format="json"
     )
 
+    target = Tweet.objects.get(pk=tweet.id)
+
     assert response.status_code == status.HTTP_200_OK
+    assert admin_user in target.like.all()
 
 
 @pytest.mark.django_db
@@ -156,13 +155,17 @@ def test_unlike_tweet(
         liked_tweet
 ):
     payload = {
-        "tweet_id": liked_tweet.id
+        "tweet_id": liked_tweet.id,
+        "page_id": liked_tweet.owner.id
     }
     response = admin_client.patch(
-        f'api/v1/tweets/{liked_tweet.id}/unlike_tweet/',
+        f'/api/v1/tweets/{liked_tweet.id}/unlike_tweet/',
         payload,
         format="json"
     )
 
+    target = Tweet.objects.get(pk=liked_tweet.id)
+
     assert response.status_code == status.HTTP_200_OK
+    assert admin_user not in target.like.all()
 
