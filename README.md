@@ -20,8 +20,8 @@ Furthermore, the app provides detailed statistics of page performance, such as t
 - **Message Broker :briefcase: :** **RabbitMQ** for both microservice and **Celery**
 - **Authentication :key: :** custom **JWT** authentication with **PyJWT**
 - **Unit Testing :mag_right: :** mock and fixture with **pytest**
-- **Containerization:** **Docker** and **docker-compose** 
-- **Version Control:** **Git** and **Git Flow**
+- **Containerization :whale2: :** **Docker** and **docker-compose** 
+- **Version Control :zap: :** **Git** and **Git Flow**
 
 ## How to use this app? 
 
