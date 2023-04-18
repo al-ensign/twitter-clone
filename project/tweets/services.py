@@ -1,6 +1,38 @@
 from datetime import datetime
 
+from django.db.models import Count
+
 from .models import Page, Tweet
+from users.aws import S3Client
+from .tools import add_image_to_request, get_file_extension
+
+
+def handle_page_image(image, request):
+    if image:
+        extension = get_file_extension(image.name)
+        file_name_str = request.data.get('name') + extension
+        file_name = f'{file_name_str}'
+        S3Client.upload_file(image, file_name)
+        add_image_to_request(file_name, request.data)
+        return
+    add_image_to_request('', request.data)
+
+
+def save_path_s3(page_id, file_name):
+    """
+    Sets s3 path to a file.
+    """
+    page = Page.objects.get(pk=page_id)
+    page.path = file_name
+    return page.save()
+
+
+def get_page_s3_path(page_id):
+    """
+    Returns s3 path to a file.
+    """
+    page = Page.objects.get(pk=page_id)
+    return page.path
 
 
 def block_page_temporary(page_id, unblock_date):
@@ -8,7 +40,6 @@ def block_page_temporary(page_id, unblock_date):
     Block a Page for a specific time period.
     Sets Page.unblock_date to the requested date.
     """
-
     page = Page.objects.get(pk=page_id)
     page.is_blocked = True
     page.unblock_date = unblock_date
@@ -20,7 +51,6 @@ def block_page_unlimited(page_id):
     Block a Page forever.
     Sets Page.unblock_date = datetime.max.
     """
-
     page = Page.objects.get(pk=page_id)
     page.is_blocked = True
     page.unblock_date = datetime.max
@@ -34,11 +64,9 @@ def send_follow_request(user_id, page_to_follow_id):
     If the Target Page is Private, User's ID will be stored in Page.follow_requests.
     However, if the Page is Public, User's ID will be directly stored in Page.followers.
     """
-
     target_page = Page.objects.get(pk=page_to_follow_id)
-    page_queryset = Page.objects.filter(pk=page_to_follow_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
-    followers = page_queryset.values_list("followers", flat=True)
+    follow_requests = Page.pages.follow_requests(page_to_follow_id)
+    followers = Page.pages.followers(page_to_follow_id)
     if target_page.is_private:
         if int(user_id) in follow_requests:
             return None
@@ -60,10 +88,8 @@ def accept_one_follow_request(page_id, user_id):
     Accept a specific follow request.
     Moves User's ID from Page.follow_requests to Page.followers.
     """
-
-    page_queryset = Page.objects.filter(pk=page_id)
     page = Page.objects.get(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
 
     if int(user_id) in follow_requests:
         page.followers.add(user_id)
@@ -76,10 +102,8 @@ def accept_all_follow_requests(page_id):
     Accept all the incoming follow requests.
     Moves all the Users' IDs from Page.follow_requests to Page.followers.
     """
-
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     for user_id in follow_requests:
         page.followers.add(user_id)
         page.follow_requests.remove(user_id)
@@ -91,10 +115,8 @@ def reject_one_follow_request(page_id, user_id):
     Delete/Reject a specific follow request.
     Removes User's ID from Page.follow_requests.
     """
-
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     if int(user_id) in follow_requests:
         page.follow_requests.remove(user_id)
         return page.save()
@@ -105,10 +127,8 @@ def reject_all_follow_requests(page_id):
     Delete/Reject all follow requests.
     Removes all the Users' IDs from Page.follow_requests.
     """
-
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    follow_requests = page_queryset.values_list("follow_requests", flat=True)
+    follow_requests = Page.pages.follow_requests(page_id)
     for user_id in follow_requests:
         page.follow_requests.remove(user_id)
         return page.save()
@@ -119,10 +139,8 @@ def unfollow(page_id, user_id):
     Unfollow a Page.
     Removes User's ID from Page.followers.
     """
-
     page = Page.objects.get(pk=page_id)
-    page_queryset = Page.objects.filter(pk=page_id)
-    followers = page_queryset.values_list("followers", flat=True)
+    followers = Page.pages.followers(page_id)
     if int(user_id) not in followers:
         return None
     else:
@@ -135,10 +153,8 @@ def like(tweet_id, user_id):
     Like a Tweet.
     Stores User's ID in Tweet.like
     """
-
     tweet = Tweet.objects.get(pk=tweet_id)
-    tweet_queryset = Tweet.objects.filter(pk=tweet_id)
-    likes = tweet_queryset.values_list("like", flat=True)
+    likes = Tweet.tweets.likes(tweet_id)
     if user_id in likes:
         return None
     else:
@@ -152,11 +168,18 @@ def unlike(tweet_id, user_id):
     Removes User's ID from Tweet.like
     """
     tweet = Tweet.objects.get(pk=tweet_id)
-    tweet_queryset = Tweet.objects.filter(pk=tweet_id)
-    likes = tweet_queryset.values_list("like", flat=True)
+    likes = Tweet.tweets.likes(tweet_id)
 
     if user_id not in likes:
         return None
     else:
         tweet.like.remove(user_id)
         return tweet.save()
+
+
+def total_likes_received(page):
+    """
+    Gets total number of likes on the page.
+    If None, returns 0.
+    """
+    return Page.pages.total_likes(page.id) or 0

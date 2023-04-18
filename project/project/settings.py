@@ -2,6 +2,9 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 import datetime
+import logging.config
+from django.utils.log import DEFAULT_LOGGING
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,7 +16,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = bool(os.getenv("DEBUG"))
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split()
-
 
 # Application definition
 
@@ -61,21 +63,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE", ),
-        "NAME": os.getenv("DB_NAME"),
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DB_NAME", "debug_database"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -95,7 +95,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -107,7 +106,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -118,19 +116,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.JWTAuth.JWTAuthentication",
     ),
 }
 
-TOKEN_TYPE = "Bearer"
+TOKEN_TYPE = os.getenv("TOKEN_TYPE")
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
@@ -143,9 +140,14 @@ RABBITMQ_PORT = os.getenv("RABBITMQ_PORT")
 RABBITMQ_USER = os.getenv("RABBITMQ_USER")
 RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
+QUEUE_NAME = os.getenv('QUEUE_NAME')
+EXCHANGE_NAME = os.getenv('EXCHANGE_NAME')
+EXCHANGE_TYPE = os.getenv('EXCHANGE_TYPE')
+ROUTING_KEY = os.getenv('ROUTING_KEY')
+
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ('json',)
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
@@ -155,3 +157,15 @@ AWS_REGION = os.getenv('AWS_REGION')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+
+
+# Disable Django's logging setup
+LOGGING_CONFIG = None
+
+LOGLEVEL = os.environ.get('LOGLEVEL', 'info').upper()
+
+LOGGING = {
+    'version': 1,                       # the dictConfig format version
+    'disable_existing_loggers': False,  # retain the default loggers
+}
+
